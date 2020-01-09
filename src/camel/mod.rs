@@ -1,6 +1,6 @@
 use std::str::FromStr;
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Camel {
     Red,
     Orange,
@@ -9,7 +9,7 @@ pub enum Camel {
     White,
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Marker {
     Camel(Camel),
     Divider,
@@ -26,7 +26,7 @@ impl FromStr for Marker {
             "g" => Ok(Marker::Camel(Camel::Green)),
             "w" => Ok(Marker::Camel(Camel::White)),
             "," => Ok(Marker::Divider),
-            _   => Err(NotAMarker::But(input.to_owned())),
+            _ => Err(NotAMarker::But(input.to_owned())),
         }
     }
 }
@@ -43,6 +43,11 @@ pub struct Race {
 
 impl From<Vec<Marker>> for Race {
     fn from(positions: Vec<Marker>) -> Self {
+        let positions = positions
+            .iter()
+            .skip_while(|marker| **marker == Marker::Divider)
+            .cloned()
+            .collect();
         Self { positions }
     }
 }
@@ -50,20 +55,20 @@ impl From<Vec<Marker>> for Race {
 impl FromStr for Race {
     type Err = RaceParseError;
 
-   fn from_str(input: &str) -> Result<Self, Self::Err> {
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
         let mut result = vec![];
         let mut cursor = 0;
         while cursor < input.len() {
-            result.push(input[cursor..(cursor+1)].parse::<Marker>()?);
+            result.push(input[cursor..(cursor + 1)].parse::<Marker>()?);
             cursor += 1;
         }
-        
+
         Ok(Race::from(result))
-   } 
+    }
 }
 
 #[derive(PartialEq, Debug)]
-pub enum RaceParseError{
+pub enum RaceParseError {
     NotAMarker(NotAMarker),
 }
 
@@ -78,18 +83,43 @@ mod test {
     use super::*;
 
     #[test]
-    fn races_can_be_equated(){
-        let left = Race::from(vec![Marker::Camel(Camel::Red), Marker::Divider, Marker::Camel(Camel::Yellow)]);
-        let right = Race::from(vec![Marker::Camel(Camel::Red), Marker::Divider, Marker::Camel(Camel::Yellow)]);
+    fn races_can_be_equated() {
+        let left = Race::from(vec![
+            Marker::Camel(Camel::Red),
+            Marker::Divider,
+            Marker::Camel(Camel::Yellow),
+        ]);
+        let right = Race::from(vec![
+            Marker::Camel(Camel::Red),
+            Marker::Divider,
+            Marker::Camel(Camel::Yellow),
+        ]);
 
         assert_eq!(left, right);
     }
 
     #[test]
-    fn races_can_be_parsed(){
+    fn races_can_be_parsed() {
         let left = "r,y".parse::<Race>().expect("to parse");
-        let right = Race::from(vec![Marker::Camel(Camel::Red), Marker::Divider, Marker::Camel(Camel::Yellow)]);
+        let right = Race::from(vec![
+            Marker::Camel(Camel::Red),
+            Marker::Divider,
+            Marker::Camel(Camel::Yellow),
+        ]);
 
-        assert_eq!(left, right); 
+        assert_eq!(left, right);
     }
+
+    #[test]
+    fn races_are_normalized() {
+        let left = ",,,,,,,r,y".parse::<Race>().expect("to parse");
+        let right = Race::from(vec![
+            Marker::Camel(Camel::Red),
+            Marker::Divider,
+            Marker::Camel(Camel::Yellow),
+        ]);
+
+        assert_eq!(left, right);
+    }
+
 }
