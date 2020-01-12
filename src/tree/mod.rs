@@ -1,47 +1,98 @@
-use std::collections::HashMap;
-use std::hash::Hash;
+use std::collections::{HashMap, HashSet};
+use crate::camel::{Race, Roll, Face, Camel};
 
-pub struct Tree<T, E>
-where
-    E: PartialEq + Eq + Hash,
+pub struct Tree
 {
-    nodes: Vec<Node<T, E>>,
+    nodes: Vec<Node>,
 }
 
-impl<T, E> Tree<T, E>
-where
-    E: PartialEq + Eq + Hash,
+impl Tree
 {
-    pub fn empty() -> Self {
-        Self { nodes: vec![] }
-    }
-
-    pub fn singleton(value: T) -> (Self, usize) {
+    pub fn singleton(value: Race) -> Self {
         let root = Node::root(value);
         let nodes = vec![root];
 
-        (Self { nodes }, 0)
+        Self { nodes }
+    }
+
+    pub fn expand(&mut self, dice: &HashSet<Camel>) {
+        self.expand_node(0, dice);
+    }
+
+    fn expand_node(&mut self, index: usize, dice: &HashSet<Camel>) {
+        for camel in dice {
+            let mut remaining_dice = dice.clone();
+            remaining_dice.remove(camel);
+            for face in Face::values() {
+                let roll = Roll::from((camel.clone(), face));
+                let race = self.perform_on(index, roll.clone());
+                let child_index = self.add_child(index, roll, race);
+                self.expand_node(child_index, &remaining_dice);
+            }
+        }
+    }
+
+    fn perform_on(&mut self, index: usize, roll: Roll) -> Race {
+        self.nodes[index].race.perform(roll)
+    }
+
+    fn add_child(&mut self, index: usize, roll: Roll, race: Race) -> usize {
+        let child = Node::child(index, race);
+        self.nodes.push(child);
+        let child_index = self.nodes.len() - 1;
+        
+        self.nodes[index].register_child(roll, child_index);
+        
+        child_index
+    }
+
+    pub fn size(&self) -> usize {
+        self.nodes.len()
     }
 }
 
-struct Node<T, E>
-where
-    E: PartialEq + Eq + Hash,
+struct Node
 {
     parent: Option<usize>,
-    value: T,
-    children: HashMap<E, usize>,
+    race: Race,
+    children: HashMap<Roll, usize>,
 }
 
-impl<T, E> Node<T, E>
-where
-    E: PartialEq + Eq + Hash,
+impl Node
 {
-    fn root(value: T) -> Self {
+    fn root(race: Race) -> Self {
         Self {
             parent: None,
-            value,
+            race,
             children: HashMap::new(),
         }
+    }
+
+    fn child(parent: usize, race: Race) -> Self {
+        Self {
+            parent: Some(parent),
+            race,
+            children: HashMap::new(),
+        }
+    }
+
+    fn register_child(&mut self, roll: Roll, child_index: usize){
+        self.children.insert(roll, child_index);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tree_has_a_size(){
+        let race = "r,y".parse::<Race>().expect("to parse");
+        let mut tree = Tree::singleton(race);
+        let mut dice = HashSet::new();
+        dice.insert(Camel::Red);
+        tree.expand(&dice);
+
+        assert_eq!(tree.size(), 4);
     }
 }

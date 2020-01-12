@@ -1,7 +1,8 @@
 use std::iter::repeat;
 use std::str::FromStr;
+use std::collections::HashSet;
 
-#[derive(PartialEq, Eq, Copy, Clone, Debug)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Camel {
     Red,
     Orange,
@@ -53,9 +54,15 @@ pub enum NotAMarker {
     But(String),
 }
 
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Eq, Debug)]
 pub struct Race {
     positions: Vec<Marker>,
+}
+
+impl Clone for Race {
+    fn clone(&self) -> Self {
+        Self { positions: self.positions.iter().cloned().collect() }
+    }
 }
 
 impl From<Vec<Marker>> for Race {
@@ -104,15 +111,23 @@ impl From<NotAMarker> for RaceParseError {
     }
 }
 
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct Roll {
     camel: Camel,
     face: Face,
 }
 
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Face {
     One,
     Two,
     Three,
+}
+
+impl Face {
+    pub fn values() -> HashSet<Self> {
+        vec![Face::One, Face::Two, Face::Three].iter().copied().collect()
+    }
 }
 
 impl From<(Camel, Face)> for Roll {
@@ -149,14 +164,14 @@ impl Race {
                 .iter()
                 .chain(self.positions[(index + offset)..].iter())
                 .chain(repeat(&Marker::Divider).take(3))
-                .cloned()
+                .copied()
                 .collect();
             let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
             let result: Vec<Marker> = remaining[0..(index + 1 + divider_offset)]
                 .iter()
                 .chain(unit.iter())
                 .chain(remaining[(index + 1 + divider_offset)..].iter())
-                .cloned()
+                .copied()
                 .collect();
             Self::from(result)
         } else {
