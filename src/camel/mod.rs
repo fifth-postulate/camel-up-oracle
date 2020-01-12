@@ -1,3 +1,4 @@
+use std::iter::repeat;
 use std::str::FromStr;
 
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
@@ -13,6 +14,22 @@ pub enum Camel {
 pub enum Marker {
     Camel(Camel),
     Divider,
+}
+
+impl Marker {
+    fn is_a_camel(&self) -> bool {
+        match self {
+            Marker::Camel(_) => true,
+            _ => false,
+        }
+    }
+
+    fn is_a_divider(&self) -> bool {
+        match self {
+            Marker::Divider => true,
+            _ => false,
+        }
+    }
 }
 
 impl FromStr for Marker {
@@ -43,7 +60,16 @@ pub struct Race {
 
 impl From<Vec<Marker>> for Race {
     fn from(positions: Vec<Marker>) -> Self {
-        let positions = positions
+        let (min, max) = positions
+            .iter()
+            .zip(0..)
+            .filter(|(marker, _)| marker.is_a_camel())
+            .map(|(_, index)| index)
+            .fold(
+                (core::usize::MAX, core::usize::MIN),
+                |(minimum, maximum), index| (minimum.min(index), maximum.max(index)),
+            );
+        let positions = positions[min..(max + 1)]
             .iter()
             .skip_while(|marker| **marker == Marker::Divider)
             .cloned()
@@ -75,6 +101,68 @@ pub enum RaceParseError {
 impl From<NotAMarker> for RaceParseError {
     fn from(problem: NotAMarker) -> Self {
         Self::NotAMarker(problem)
+    }
+}
+
+pub struct Roll {
+    camel: Camel,
+    face: Face,
+}
+
+pub enum Face {
+    One,
+    Two,
+    Three,
+}
+
+impl From<(Camel, Face)> for Roll {
+    fn from((camel, face): (Camel, Face)) -> Self {
+        Self { camel, face }
+    }
+}
+
+impl From<Face> for usize {
+    fn from(face: Face) -> Self {
+        match face {
+            Face::One => 1,
+            Face::Two => 2,
+            Face::Three => 3,
+        }
+    }
+}
+
+impl Race {
+    pub fn perform<R>(&self, roll: R) -> Self
+    where
+        R: Into<Roll>,
+    {
+        let roll: Roll = roll.into();
+        if self.positions.contains(&Marker::Camel(roll.camel)) {
+            let index = self.positions.iter().position(|marker| *marker == Marker::Camel(roll.camel)).unwrap(/* camel is present because of contains check */);
+            let offset = self.positions[index..]
+                .iter()
+                .take_while(|marker| marker.is_a_camel())
+                .count();
+
+            let unit = &self.positions[index..(index + offset)];
+            let remaining: Vec<Marker> = self.positions[0..index]
+                .iter()
+                .chain(self.positions[(index + offset)..].iter())
+                .chain(repeat(&Marker::Divider).take(3))
+                .cloned()
+                .collect();
+            let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
+            let result: Vec<Marker> = remaining[0..(index + 1 + divider_offset)]
+                .iter()
+                .chain(unit.iter())
+                .chain(remaining[(index + 1 + divider_offset)..].iter())
+                .cloned()
+                .collect();
+            Self::from(result)
+        } else {
+            let positions: Vec<Marker> = self.positions.iter().cloned().collect();
+            Self::from(positions)
+        }
     }
 }
 
@@ -112,7 +200,7 @@ mod test {
 
     #[test]
     fn races_are_normalized() {
-        let left = ",,,,,,,r,y".parse::<Race>().expect("to parse");
+        let left = ",,,,,,,r,y,,,,,,,,,,,".parse::<Race>().expect("to parse");
         let right = Race::from(vec![
             Marker::Camel(Camel::Red),
             Marker::Divider,
@@ -122,4 +210,30 @@ mod test {
         assert_eq!(left, right);
     }
 
+    #[test]
+    fn races_can_perform_a_roll_one() {
+        let race = "ro,y".parse::<Race>().expect("to parse");
+        let result = race.perform((Camel::Red, Face::One));
+        let expected = "yro".parse::<Race>().expect("to parse");
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn races_can_perform_a_roll_two() {
+        let race = "ro,y".parse::<Race>().expect("to parse");
+        let result = race.perform((Camel::Red, Face::Two));
+        let expected = "y,ro".parse::<Race>().expect("to parse");
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn races_can_perform_a_roll_three() {
+        let race = "ro,y".parse::<Race>().expect("to parse");
+        let result = race.perform((Camel::Red, Face::Three));
+        let expected = "y,,ro".parse::<Race>().expect("to parse");
+
+        assert_eq!(result, expected);
+    }
 }
