@@ -4,7 +4,7 @@ use std::ops::{Add, Div, Mul, Neg, Sub};
 pub struct Fraction(i64, u64);
 
 impl Fraction {
-    fn new(numerator: i64, denominator: u64) -> Self {
+    pub fn new(numerator: i64, denominator: u64) -> Self {
         if denominator == 0 {
             panic!("denominator should never be 0")
         }
@@ -15,11 +15,11 @@ impl Fraction {
         Fraction(numerator, denominator)
     }
 
-    fn zero() -> Self {
+    pub fn zero() -> Self {
         Fraction(0, 1)
     }
 
-    fn one() -> Self {
+    pub fn one() -> Self {
         Fraction(1, 1)
     }
 

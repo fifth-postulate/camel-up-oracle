@@ -1,6 +1,6 @@
+use std::collections::HashSet;
 use std::iter::repeat;
 use std::str::FromStr;
-use std::collections::HashSet;
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Camel {
@@ -29,6 +29,13 @@ impl Marker {
         match self {
             Marker::Divider => true,
             _ => false,
+        }
+    }
+
+    fn to_camel(&self) -> Option<Camel> {
+        match self {
+            Marker::Camel(camel) => Some(*camel),
+            _ => None,
         }
     }
 }
@@ -61,7 +68,9 @@ pub struct Race {
 
 impl Clone for Race {
     fn clone(&self) -> Self {
-        Self { positions: self.positions.iter().cloned().collect() }
+        Self {
+            positions: self.positions.iter().cloned().collect(),
+        }
     }
 }
 
@@ -126,7 +135,10 @@ pub enum Face {
 
 impl Face {
     pub fn values() -> HashSet<Self> {
-        vec![Face::One, Face::Two, Face::Three].iter().copied().collect()
+        vec![Face::One, Face::Two, Face::Three]
+            .iter()
+            .copied()
+            .collect()
     }
 }
 
@@ -178,6 +190,14 @@ impl Race {
             let positions: Vec<Marker> = self.positions.iter().cloned().collect();
             Self::from(positions)
         }
+    }
+
+    pub fn winner(&self) -> Option<Camel> {
+        self.positions
+            .iter()
+            .filter(|marker| marker.is_a_camel())
+            .map(|marker| marker.to_camel().unwrap())
+            .last()
     }
 }
 

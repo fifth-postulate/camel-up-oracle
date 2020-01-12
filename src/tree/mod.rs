@@ -1,13 +1,11 @@
+use crate::camel::{Camel, Face, Race, Roll};
 use std::collections::{HashMap, HashSet};
-use crate::camel::{Race, Roll, Face, Camel};
 
-pub struct Tree
-{
+pub struct Tree {
     nodes: Vec<Node>,
 }
 
-impl Tree
-{
+impl Tree {
     pub fn singleton(value: Race) -> Self {
         let root = Node::root(value);
         let nodes = vec![root];
@@ -40,26 +38,32 @@ impl Tree
         let child = Node::child(index, race);
         self.nodes.push(child);
         let child_index = self.nodes.len() - 1;
-        
+
         self.nodes[index].register_child(roll, child_index);
-        
+
         child_index
     }
 
     pub fn size(&self) -> usize {
         self.nodes.len()
     }
+
+    pub fn visit_leaves(&self, visitor: &mut dyn LeafVisitor) {
+        for candidate in &self.nodes {
+            if candidate.is_leaf() {
+                visitor.visit(&candidate.race);
+            }
+        }
+    }
 }
 
-struct Node
-{
+struct Node {
     parent: Option<usize>,
     race: Race,
     children: HashMap<Roll, usize>,
 }
 
-impl Node
-{
+impl Node {
     fn root(race: Race) -> Self {
         Self {
             parent: None,
@@ -76,9 +80,17 @@ impl Node
         }
     }
 
-    fn register_child(&mut self, roll: Roll, child_index: usize){
+    fn register_child(&mut self, roll: Roll, child_index: usize) {
         self.children.insert(roll, child_index);
     }
+
+    fn is_leaf(&self) -> bool {
+        self.children.is_empty()
+    }
+}
+
+pub trait LeafVisitor {
+    fn visit(&mut self, race: &Race);
 }
 
 #[cfg(test)]
@@ -86,7 +98,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn tree_has_a_size(){
+    fn tree_has_a_size() {
         let race = "r,y".parse::<Race>().expect("to parse");
         let mut tree = Tree::singleton(race);
         let mut dice = HashSet::new();
