@@ -1,11 +1,11 @@
 use crate::{
-    camel::{Camel, Race},
+    camel::{Camel, Race, Dice},
     fraction::Fraction,
     tree::{LeafVisitor, Tree},
 };
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 
-pub fn project(race: &Race, dice: &HashSet<Camel>) -> HashMap<Camel, Fraction> {
+pub fn project(race: &Race, dice: &Dice) -> HashMap<Camel, Fraction> {
     let mut tree = Tree::singleton(race.clone());
     tree.expand(dice);
 
@@ -54,8 +54,7 @@ mod test {
     #[test]
     fn should_have_a_clear_winner() {
         let race = "r,y".parse::<Race>().expect("to parse");
-        let mut dice = HashSet::new();
-        dice.insert(Camel::Red);
+        let dice = "r".parse::<Dice>().expect("to parse");
         let chances = project(&race, &dice);
 
         assert_eq!(chances.get(&Camel::Red), Some(&Fraction::one()));
@@ -64,8 +63,7 @@ mod test {
     #[test]
     fn should_determine_chances() {
         let race = "r,,y".parse::<Race>().expect("to parse");
-        let mut dice = HashSet::new();
-        dice.insert(Camel::Red);
+        let dice = "r".parse::<Dice>().expect("to parse");
         let chances = project(&race, &dice);
 
         assert_eq!(chances.get(&Camel::Red), Some(&Fraction::new(2, 3)));

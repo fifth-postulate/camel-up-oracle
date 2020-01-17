@@ -1,5 +1,5 @@
-use crate::camel::{Camel, Face, Race, Roll};
-use std::collections::{HashMap, HashSet};
+use crate::camel::{Face, Race, Roll, Dice};
+use std::collections::HashMap;
 
 pub struct Tree {
     nodes: Vec<Node>,
@@ -7,22 +7,21 @@ pub struct Tree {
 
 impl Tree {
     pub fn singleton(value: Race) -> Self {
-        let root = Node::root(value);
+        let root = Node::new(value);
         let nodes = vec![root];
 
         Self { nodes }
     }
 
-    pub fn expand(&mut self, dice: &HashSet<Camel>) {
+    pub fn expand(&mut self, dice: &Dice) {
         self.expand_node(0, dice);
     }
 
-    fn expand_node(&mut self, index: usize, dice: &HashSet<Camel>) {
-        for camel in dice {
-            let mut remaining_dice = dice.clone();
-            remaining_dice.remove(camel);
+    fn expand_node(&mut self, index: usize, dice: &Dice){
+        for camel in dice.clone() {
+            let remaining_dice = dice.remove(&camel);
             for face in Face::values() {
-                let roll = Roll::from((*camel, face));
+                let roll = Roll::from((camel, face));
                 let race = self.perform_on(index, roll);
                 let child_index = self.add_child(index, roll, race);
                 self.expand_node(child_index, &remaining_dice);
@@ -35,17 +34,13 @@ impl Tree {
     }
 
     fn add_child(&mut self, index: usize, roll: Roll, race: Race) -> usize {
-        let child = Node::child(index, race);
+        let child = Node::new(race);
         self.nodes.push(child);
         let child_index = self.nodes.len() - 1;
 
         self.nodes[index].register_child(roll, child_index);
 
         child_index
-    }
-
-    pub fn size(&self) -> usize {
-        self.nodes.len()
     }
 
     pub fn visit_leaves(&self, visitor: &mut dyn LeafVisitor) {
@@ -58,28 +53,17 @@ impl Tree {
 }
 
 struct Node {
-    parent: Option<usize>,
     race: Race,
     children: HashMap<Roll, usize>,
 }
 
 impl Node {
-    fn root(race: Race) -> Self {
+    fn new(race: Race) -> Self {
         Self {
-            parent: None,
             race,
             children: HashMap::new(),
         }
     }
-
-    fn child(parent: usize, race: Race) -> Self {
-        Self {
-            parent: Some(parent),
-            race,
-            children: HashMap::new(),
-        }
-    }
-
     fn register_child(&mut self, roll: Roll, child_index: usize) {
         self.children.insert(roll, child_index);
     }
@@ -91,20 +75,4 @@ impl Node {
 
 pub trait LeafVisitor {
     fn visit(&mut self, race: &Race);
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn tree_has_a_size() {
-        let race = "r,y".parse::<Race>().expect("to parse");
-        let mut tree = Tree::singleton(race);
-        let mut dice = HashSet::new();
-        dice.insert(Camel::Red);
-        tree.expand(&dice);
-
-        assert_eq!(tree.size(), 4);
-    }
 }

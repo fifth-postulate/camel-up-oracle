@@ -201,6 +201,62 @@ impl Race {
     }
 }
 
+#[derive(PartialEq, Eq, Clone, Debug)]
+pub struct Dice(HashSet<Camel>);
+
+impl Dice {
+    pub fn remove(&self, camel: &Camel) -> Self {
+        let mut dice = self.0.clone();
+        dice.remove(camel);
+        Self::from(dice)
+    }
+}
+
+impl From<HashSet<Camel>> for Dice {
+    fn from(dice: HashSet<Camel>) -> Self {
+        Self(dice)
+    }
+}
+
+impl FromStr for Dice {
+    type Err = NoDice;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let mut dice = HashSet::new();
+        let mut index = 0;
+        while index < input.len(){
+            let marker = input[index..=index].parse::<Marker>()?;
+            index += 1;
+            match marker.to_camel() {
+                Some(camel) => {dice.insert(camel);},
+                None => {return Err(NoDice::NotACamel);},
+            }
+        }
+        Ok(Dice::from(dice))
+   }
+}
+
+impl IntoIterator for Dice {
+    type Item = Camel;
+    type IntoIter = std::collections::hash_set::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+#[derive(PartialEq, Debug)]
+pub enum NoDice {
+    NotAMarker(NotAMarker),
+    NotACamel,
+}
+
+impl From<NotAMarker> for NoDice {
+    fn from(error: NotAMarker) -> Self {
+        NoDice::NotAMarker(error)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -270,5 +326,16 @@ mod test {
         let expected = "y,,ro".parse::<Race>().expect("to parse");
 
         assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn dice_can_be_parsed() {
+        let actual = "ryg".parse::<Dice>().expect("to parse");
+        let mut dice = HashSet::new();
+        dice.insert(Camel::Red);
+        dice.insert(Camel::Yellow);
+        dice.insert(Camel::Green);
+
+        assert_eq!(actual, Dice::from(dice));
     }
 }
