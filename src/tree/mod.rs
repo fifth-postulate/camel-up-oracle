@@ -22,8 +22,8 @@ impl Tree {
             let mut remaining_dice = dice.clone();
             remaining_dice.remove(camel);
             for face in Face::values() {
-                let roll = Roll::from((camel.clone(), face));
-                let race = self.perform_on(index, roll.clone());
+                let roll = Roll::from((*camel, face));
+                let race = self.perform_on(index, roll);
                 let child_index = self.add_child(index, roll, race);
                 self.expand_node(child_index, &remaining_dice);
             }

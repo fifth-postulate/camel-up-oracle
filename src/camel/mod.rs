@@ -18,23 +18,23 @@ pub enum Marker {
 }
 
 impl Marker {
-    fn is_a_camel(&self) -> bool {
+    fn is_a_camel(self) -> bool {
         match self {
             Marker::Camel(_) => true,
             _ => false,
         }
     }
 
-    fn is_a_divider(&self) -> bool {
+    fn is_a_divider(self) -> bool {
         match self {
             Marker::Divider => true,
             _ => false,
         }
     }
 
-    fn to_camel(&self) -> Option<Camel> {
+    fn to_camel(self) -> Option<Camel> {
         match self {
-            Marker::Camel(camel) => Some(*camel),
+            Marker::Camel(camel) => Some(camel),
             _ => None,
         }
     }
@@ -69,7 +69,7 @@ pub struct Race {
 impl Clone for Race {
     fn clone(&self) -> Self {
         Self {
-            positions: self.positions.iter().cloned().collect(),
+            positions: self.positions.to_vec(),
         }
     }
 }
@@ -85,7 +85,7 @@ impl From<Vec<Marker>> for Race {
                 (core::usize::MAX, core::usize::MIN),
                 |(minimum, maximum), index| (minimum.min(index), maximum.max(index)),
             );
-        let positions = positions[min..(max + 1)]
+        let positions = positions[min..=max]
             .iter()
             .skip_while(|marker| **marker == Marker::Divider)
             .cloned()
@@ -101,7 +101,7 @@ impl FromStr for Race {
         let mut result = vec![];
         let mut cursor = 0;
         while cursor < input.len() {
-            result.push(input[cursor..(cursor + 1)].parse::<Marker>()?);
+            result.push(input[cursor..=cursor].parse::<Marker>()?);
             cursor += 1;
         }
 
@@ -187,7 +187,7 @@ impl Race {
                 .collect();
             Self::from(result)
         } else {
-            let positions: Vec<Marker> = self.positions.iter().cloned().collect();
+            let positions: Vec<Marker> = self.positions.to_vec();
             Self::from(positions)
         }
     }

@@ -46,6 +46,7 @@ where
 {
     type Output = Self;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn add(self, other: F) -> Self::Output {
         let other = other.into();
 
@@ -96,6 +97,7 @@ where
 {
     type Output = Option<Self>;
 
+    #[allow(clippy::suspicious_arithmetic_impl)]
     fn div(self, other: F) -> Self::Output {
         let other = other.into();
 

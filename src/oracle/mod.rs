@@ -24,12 +24,7 @@ impl LeafCounter {
     fn chances(&self) -> HashMap<Camel, Fraction> {
         self.count
             .iter()
-            .map(|(camel, count)| {
-                (
-                    camel.clone(),
-                    Fraction::new(*count as i64, self.total as u64),
-                )
-            })
+            .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
             .collect()
     }
 }
