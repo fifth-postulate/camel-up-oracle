@@ -212,6 +212,18 @@ impl Dice {
     }
 }
 
+impl Default for Dice {
+    fn default() -> Self {
+        let mut dice = HashSet::new();
+        dice.insert(Camel::Red);
+        dice.insert(Camel::Orange);
+        dice.insert(Camel::Yellow);
+        dice.insert(Camel::Green);
+        dice.insert(Camel::White);
+        Self::from(dice)
+    }
+}
+
 impl From<HashSet<Camel>> for Dice {
     fn from(dice: HashSet<Camel>) -> Self {
         Self(dice)

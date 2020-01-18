@@ -25,14 +25,13 @@ fn main() {
             Arg::with_name("dice")
                 .short("d")
                 .long("dice")
-                .help("determines which dice are present")
-                .required(true)
+                .help("determines which dice are present, defaults to all dice")
                 .takes_value(true),
         )
         .get_matches();
 
     let race_description = matches.value_of("race").unwrap();
-    let dice_description = matches.value_of("dice").unwrap();
+    let dice_description = matches.value_of("dice").or(Some("roygw")).unwrap();
 
     if let (Ok(race), Ok(dice)) = (
         race_description.parse::<Race>(),
