@@ -1,4 +1,4 @@
-use crate::camel::{Face, Race, Roll, Dice};
+use crate::camel::{Dice, Face, Race, Roll};
 use std::collections::HashMap;
 
 pub struct Tree {
@@ -17,7 +17,7 @@ impl Tree {
         self.expand_node(0, dice);
     }
 
-    fn expand_node(&mut self, index: usize, dice: &Dice){
+    fn expand_node(&mut self, index: usize, dice: &Dice) {
         for camel in dice.clone() {
             let remaining_dice = dice.remove(&camel);
             for face in Face::values() {

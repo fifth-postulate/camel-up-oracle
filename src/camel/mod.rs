@@ -175,7 +175,7 @@ impl Race {
             let remaining: Vec<Marker> = self.positions[0..index]
                 .iter()
                 .chain(self.positions[(index + offset)..].iter())
-                .chain(repeat(&Marker::Divider).take(3))
+                .chain(repeat(&Marker::Divider).take(4))
                 .copied()
                 .collect();
             let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
@@ -224,16 +224,20 @@ impl FromStr for Dice {
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let mut dice = HashSet::new();
         let mut index = 0;
-        while index < input.len(){
+        while index < input.len() {
             let marker = input[index..=index].parse::<Marker>()?;
             index += 1;
             match marker.to_camel() {
-                Some(camel) => {dice.insert(camel);},
-                None => {return Err(NoDice::NotACamel);},
+                Some(camel) => {
+                    dice.insert(camel);
+                }
+                None => {
+                    return Err(NoDice::NotACamel);
+                }
             }
         }
         Ok(Dice::from(dice))
-   }
+    }
 }
 
 impl IntoIterator for Dice {

@@ -1,5 +1,5 @@
 use crate::{
-    camel::{Camel, Race, Dice},
+    camel::{Camel, Dice, Race},
     fraction::Fraction,
     tree::{LeafVisitor, Tree},
 };
