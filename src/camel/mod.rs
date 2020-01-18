@@ -1,19 +1,55 @@
+//! The camel module models Camel Up.
+//! 
+//! It identifies all the relevant parts of the Camel Up game. Starting from a `Race` it allows you to perform a `Roll`, which will return the resulting race.
+//! 
+//! ```
+//! # use camel_up::camel::{Race, Marker, Camel, Roll, Face};
+//! let race = Race::from(vec![Marker::Camel(Camel::Red), Marker::Divider, Marker::Camel(Camel::Yellow)]);
+//! let roll = Roll::from((Camel::Red, Face::One));
+//! 
+//! let actual = race.perform(roll);
+//! 
+//! let expected = Race::from(vec![Marker::Camel(Camel::Yellow), Marker::Camel(Camel::Red)]);
+//! assert_eq!(actual, expected); 
+//! ```
+//! 
+//! One can cut down on the verbosity by using the various `parse` functions and other convenience functions. The above code example can be widdles down to
+//! 
+//! ```
+//! # use camel_up::camel::{Race, Marker, Camel, Roll, Face};
+//! let race = "r,y".parse::<Race>().expect("to parse");
+//! 
+//! let actual = race.perform((Camel::Red, Face::One));
+//! 
+//! let expected = "yr".parse::<Race>().expect("to parse");
+//! assert_eq!(actual, expected); 
+//! ```
+
 use std::collections::HashSet;
 use std::iter::repeat;
 use std::str::FromStr;
 
+/// The various camels that race in the game.
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Camel {
+    /// The red camel, Rachel for friends.
     Red,
+    /// The orange camel, also known as Olleta.
     Orange,
+    /// The yellow camel. They are a little shy. They go by the name of Yenn.
     Yellow,
+    /// The green camel. The mysterious one, calls itself G.
     Green,
+    /// The white camel. Responds to Whitney. Suspected to be a foreign spy.
     White,
 }
 
+/// A marker is used to describe a race.
 #[derive(PartialEq, Eq, Copy, Clone, Debug)]
 pub enum Marker {
+    /// Signals that a camel is present at this position. Its argument tells you which camel.
     Camel(Camel),
+    /// Divider between positions.
     Divider,
 }
 
@@ -56,11 +92,24 @@ impl FromStr for Marker {
     }
 }
 
+/// When parsing of Marker goes wrong, this enumeration tells you precisely what went down.
 #[derive(PartialEq, Debug)]
 pub enum NotAMarker {
+    /// It was not a marker, but something else. The argument tells you what it was.
     But(String),
 }
 
+/// Models a race as a sequence of markers. 
+/// 
+/// Note that a race is normalized, i.e. leading and trailing dividers are stripped.
+/// 
+/// ```
+/// # use camel_up::camel::{Race, Marker, Camel};
+/// let race_with_superfluous_dividers = ",,,,,,r,y,,,,,,,".parse::<Race>().expect("to parse");
+/// let minimal_race = "r,y".parse::<Race>().expect("to parse");
+/// 
+/// assert_eq!(race_with_superfluous_dividers, minimal_race); 
+/// ```
 #[derive(PartialEq, Eq, Debug)]
 pub struct Race {
     positions: Vec<Marker>,
@@ -109,8 +158,11 @@ impl FromStr for Race {
     }
 }
 
+
+/// When parsing of Race goes wrong, this enumeration tells you precisely what went down.
 #[derive(PartialEq, Debug)]
 pub enum RaceParseError {
+    /// a race consists solely of markers, and this isn't a marker.
     NotAMarker(NotAMarker),
 }
 
@@ -120,20 +172,37 @@ impl From<NotAMarker> for RaceParseError {
     }
 }
 
+/// A roll of the dice
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct Roll {
+    /// The camel that is allowed to move.
     camel: Camel,
+    /// The number of steps they are allowed to take.
     face: Face,
 }
 
+/// The faces of the Camel dice. 
+/// 
+/// It corresponds with the number of steps to take.oracle
+/// 
+/// ```
+/// # use camel_up::camel::{Face};
+/// assert_eq!(usize::from(Face::One), 1 as usize); 
+/// assert_eq!(usize::from(Face::Two), 2 as usize); 
+/// assert_eq!(usize::from(Face::Three), 3 as usize); 
+/// ```
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Face {
+    /// represents one step
     One,
+    /// represents two steps
     Two,
+    /// represents three steps
     Three,
 }
 
 impl Face {
+    /// Convenience function that retuns all the possible face values.
     pub fn values() -> HashSet<Self> {
         vec![Face::One, Face::Two, Face::Three]
             .iter()
@@ -159,6 +228,7 @@ impl From<Face> for usize {
 }
 
 impl Race {
+    /// perform a roll on a race, returns the race with all the camels in their correct positions.
     pub fn perform<R>(&self, roll: R) -> Self
     where
         R: Into<Roll>,
@@ -192,6 +262,7 @@ impl Race {
         }
     }
 
+    /// Determines which camel is the winner, i.e. is at the front.
     pub fn winner(&self) -> Option<Camel> {
         self.positions
             .iter()
@@ -201,10 +272,12 @@ impl Race {
     }
 }
 
+/// Represents the dice that still can be rolled.
 #[derive(PartialEq, Eq, Clone, Debug)]
 pub struct Dice(HashSet<Camel>);
 
 impl Dice {
+    /// Remove a dice from the pyramid, i.e. the options to throw are reduced.
     pub fn remove(&self, camel: Camel) -> Self {
         let mut dice = self.0.clone();
         dice.remove(&camel);
@@ -261,9 +334,13 @@ impl IntoIterator for Dice {
     }
 }
 
+
+/// When parsing of Dice goes wrong, this enumeration tells you precisely what went down.
 #[derive(PartialEq, Debug)]
 pub enum NoDice {
+    /// What is encountered isn't even a marker.
     NotAMarker(NotAMarker),
+    /// It is a marker, but not a camel.
     NotACamel,
 }
 
