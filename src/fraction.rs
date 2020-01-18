@@ -1,7 +1,8 @@
+use std::cmp::Ordering;
+use std::fmt::{self, Display, Formatter};
 use std::ops::{Add, Div, Mul, Neg, Sub};
-use std::fmt::{self,Display, Formatter};
 
-#[derive(PartialEq, Eq, Hash, Debug)]
+#[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct Fraction(i64, u64);
 
 impl Fraction {
@@ -120,13 +121,25 @@ fn gcd(mut a: u64, mut b: u64) -> u64 {
 }
 
 impl Display for Fraction {
-    fn fmt(&self, f: &mut Formatter) -> fmt::Result{
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result {
         let (n, d) = (self.0, self.1);
         if d != 1 {
             write!(f, "{}/{}", n, d)
         } else {
             write!(f, "{}", n)
         }
+    }
+}
+
+impl Ord for Fraction {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (other.1 as i64 * self.0).cmp(&(self.1 as i64 * other.0))
+    }
+}
+
+impl PartialOrd for Fraction {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -200,11 +213,29 @@ mod test {
     }
 
     #[test]
-    fn fractions_can_be_displayed(){
-        let s = Fraction::new(2,4);
+    fn fractions_can_be_displayed() {
+        let s = Fraction::new(2, 4);
         let mut output = String::new();
         write!(output, "{}", s).expect("to write");
 
         assert_eq!(output, "1/2".to_owned());
+    }
+
+    #[test]
+    fn fractions_can_be_ordered() {
+        let mut fractions = Vec::new();
+        fractions.push(Fraction::new(2, 3));
+        fractions.push(Fraction::new(1, 3));
+        fractions.push(Fraction::new(1, 2));
+        fractions.sort();
+
+        assert_eq!(
+            fractions,
+            vec![
+                Fraction::new(1, 3),
+                Fraction::new(1, 2),
+                Fraction::new(2, 3)
+            ]
+        )
     }
 }

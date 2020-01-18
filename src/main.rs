@@ -2,7 +2,8 @@ extern crate camel_up;
 extern crate clap;
 
 use camel_up::{
-    camel::{Dice, Race},
+    camel::{Camel, Dice, Race},
+    fraction::Fraction,
     oracle::project,
 };
 use clap::{App, Arg};
@@ -37,10 +38,18 @@ fn main() {
         race_description.parse::<Race>(),
         dice_description.parse::<Dice>(),
     ) {
-        println!("{:?}", dice);
         let result = project(&race, &dice);
-        println!("{:?}", result);
+        let mut ordered: Vec<(Camel, Fraction)> = result.iter().map(|(k, v)| (*k, *v)).collect();
+        ordered.sort_by(|(_, left), (_, right)| right.cmp(&left));
+        print(&ordered);
     } else {
         println!("whoops!");
     }
+}
+
+fn print(elements: &[(Camel, Fraction)]) {
+    for (camel, fraction) in elements {
+        print!("({:?},{})", camel, fraction);
+    }
+    println!()
 }
