@@ -1,4 +1,5 @@
 use std::ops::{Add, Div, Mul, Neg, Sub};
+use std::fmt::{self,Display, Formatter};
 
 #[derive(PartialEq, Eq, Hash, Debug)]
 pub struct Fraction(i64, u64);
@@ -118,9 +119,21 @@ fn gcd(mut a: u64, mut b: u64) -> u64 {
     a
 }
 
+impl Display for Fraction {
+    fn fmt(&self, f: &mut Formatter) -> fmt::Result{
+        let (n, d) = (self.0, self.1);
+        if d != 1 {
+            write!(f, "{}/{}", n, d)
+        } else {
+            write!(f, "{}", n)
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
+    use std::fmt::Write;
 
     #[test]
     fn fractions_should_add_other_fraction() {
@@ -184,5 +197,14 @@ mod test {
         let answer = Fraction::new(0, 6);
 
         assert_eq!(answer, Fraction::zero());
+    }
+
+    #[test]
+    fn fractions_can_be_displayed(){
+        let s = Fraction::new(2,4);
+        let mut output = String::new();
+        write!(output, "{}", s).expect("to write");
+
+        assert_eq!(output, "1/2".to_owned());
     }
 }

@@ -19,7 +19,7 @@ impl Tree {
 
     fn expand_node(&mut self, index: usize, dice: &Dice) {
         for camel in dice.clone() {
-            let remaining_dice = dice.remove(&camel);
+            let remaining_dice = dice.remove(camel);
             for face in Face::values() {
                 let roll = Roll::from((camel, face));
                 let race = self.perform_on(index, roll);

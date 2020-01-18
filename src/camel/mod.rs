@@ -205,9 +205,9 @@ impl Race {
 pub struct Dice(HashSet<Camel>);
 
 impl Dice {
-    pub fn remove(&self, camel: &Camel) -> Self {
+    pub fn remove(&self, camel: Camel) -> Self {
         let mut dice = self.0.clone();
-        dice.remove(camel);
+        dice.remove(&camel);
         Self::from(dice)
     }
 }
