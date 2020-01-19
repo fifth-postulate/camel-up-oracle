@@ -1,12 +1,12 @@
 //! provides a means to calculate with fractions.
-//! 
+//!
 //! ```
 //! # use camel_up::fraction::Fraction;
 //! let f = Fraction::new(1,2);
 //! let g = Fraction::new(1,3);
-//! 
+//!
 //! let sum = f + g;
-//! 
+//!
 //! assert_eq!(sum, Fraction::new(5,6));
 //! ```
 
@@ -20,7 +20,7 @@ pub struct Fraction(i64, u64);
 
 impl Fraction {
     /// Creates a fraction.
-    /// 
+    ///
     /// The denominator should not be zero, panics otherwise.
     pub fn new(numerator: i64, denominator: u64) -> Self {
         if denominator == 0 {

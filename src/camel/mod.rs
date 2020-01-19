@@ -1,28 +1,28 @@
 //! The camel module models Camel Up.
-//! 
+//!
 //! It identifies all the relevant parts of the Camel Up game. Starting from a `Race` it allows you to perform a `Roll`, which will return the resulting race.
-//! 
+//!
 //! ```
 //! # use camel_up::camel::{Race, Marker, Camel, Roll, Face};
 //! let race = Race::from(vec![Marker::Camel(Camel::Red), Marker::Divider, Marker::Camel(Camel::Yellow)]);
 //! let roll = Roll::from((Camel::Red, Face::One));
-//! 
+//!
 //! let actual = race.perform(roll);
-//! 
+//!
 //! let expected = Race::from(vec![Marker::Camel(Camel::Yellow), Marker::Camel(Camel::Red)]);
-//! assert_eq!(actual, expected); 
+//! assert_eq!(actual, expected);
 //! ```
-//! 
+//!
 //! One can cut down on the verbosity by using the various `parse` functions and other convenience functions. The above code example can be widdles down to
-//! 
+//!
 //! ```
 //! # use camel_up::camel::{Race, Marker, Camel, Roll, Face};
 //! let race = "r,y".parse::<Race>().expect("to parse");
-//! 
+//!
 //! let actual = race.perform((Camel::Red, Face::One));
-//! 
+//!
 //! let expected = "yr".parse::<Race>().expect("to parse");
-//! assert_eq!(actual, expected); 
+//! assert_eq!(actual, expected);
 //! ```
 
 use std::collections::HashSet;
@@ -99,16 +99,16 @@ pub enum NotAMarker {
     But(String),
 }
 
-/// Models a race as a sequence of markers. 
-/// 
+/// Models a race as a sequence of markers.
+///
 /// Note that a race is normalized, i.e. leading and trailing dividers are stripped.
-/// 
+///
 /// ```
 /// # use camel_up::camel::{Race, Marker, Camel};
 /// let race_with_superfluous_dividers = ",,,,,,r,y,,,,,,,".parse::<Race>().expect("to parse");
 /// let minimal_race = "r,y".parse::<Race>().expect("to parse");
-/// 
-/// assert_eq!(race_with_superfluous_dividers, minimal_race); 
+///
+/// assert_eq!(race_with_superfluous_dividers, minimal_race);
 /// ```
 #[derive(PartialEq, Eq, Debug)]
 pub struct Race {
@@ -158,7 +158,6 @@ impl FromStr for Race {
     }
 }
 
-
 /// When parsing of Race goes wrong, this enumeration tells you precisely what went down.
 #[derive(PartialEq, Debug)]
 pub enum RaceParseError {
@@ -181,15 +180,15 @@ pub struct Roll {
     face: Face,
 }
 
-/// The faces of the Camel dice. 
-/// 
+/// The faces of the Camel dice.
+///
 /// It corresponds with the number of steps to take.oracle
-/// 
+///
 /// ```
 /// # use camel_up::camel::{Face};
-/// assert_eq!(usize::from(Face::One), 1 as usize); 
-/// assert_eq!(usize::from(Face::Two), 2 as usize); 
-/// assert_eq!(usize::from(Face::Three), 3 as usize); 
+/// assert_eq!(usize::from(Face::One), 1 as usize);
+/// assert_eq!(usize::from(Face::Two), 2 as usize);
+/// assert_eq!(usize::from(Face::Three), 3 as usize);
 /// ```
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub enum Face {
@@ -333,7 +332,6 @@ impl IntoIterator for Dice {
         self.0.into_iter()
     }
 }
-
 
 /// When parsing of Dice goes wrong, this enumeration tells you precisely what went down.
 #[derive(PartialEq, Debug)]

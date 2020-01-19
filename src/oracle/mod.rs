@@ -1,3 +1,8 @@
+//! An oracle is
+//!
+//! > a person or agency considered to provide wise and insightful counsel or prophetic predictions or precognition of the future, inspired by the gods. As such it is a form of divination.
+//!
+//! We divine by way of mathematics.
 use crate::{
     camel::{Camel, Dice, Race},
     fraction::Fraction,
@@ -5,6 +10,9 @@ use crate::{
 };
 use std::collections::HashMap;
 
+/// Determines the win chances for each camel.
+///
+/// The `HashMap` returns for each camel present in the race, the chance of winning.
 pub fn project(race: &Race, dice: &Dice) -> HashMap<Camel, Fraction> {
     let mut tree = Tree::singleton(race.clone());
     tree.expand(dice);

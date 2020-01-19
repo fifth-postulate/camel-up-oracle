@@ -1,5 +1,5 @@
 pub mod camel;
-#[deny(missing_docs)]
 pub mod fraction;
+#[deny(missing_docs)]
 pub mod oracle;
 mod tree;
