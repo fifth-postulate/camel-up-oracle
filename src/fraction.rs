@@ -1,11 +1,27 @@
+//! provides a means to calculate with fractions.
+//! 
+//! ```
+//! # use camel_up::fraction::Fraction;
+//! let f = Fraction::new(1,2);
+//! let g = Fraction::new(1,3);
+//! 
+//! let sum = f + g;
+//! 
+//! assert_eq!(sum, Fraction::new(5,6));
+//! ```
+
 use std::cmp::Ordering;
 use std::fmt::{self, Display, Formatter};
 use std::ops::{Add, Div, Mul, Neg, Sub};
 
+/// Fraction::new(n, d) represents the rational number n/d.
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct Fraction(i64, u64);
 
 impl Fraction {
+    /// Creates a fraction.
+    /// 
+    /// The denominator should not be zero, panics otherwise.
     pub fn new(numerator: i64, denominator: u64) -> Self {
         if denominator == 0 {
             panic!("denominator should never be 0")
@@ -17,10 +33,12 @@ impl Fraction {
         Fraction(numerator, denominator)
     }
 
+    /// Returns 0/1
     pub fn zero() -> Self {
         Fraction(0, 1)
     }
 
+    /// returns 0/1
     pub fn one() -> Self {
         Fraction(1, 1)
     }
