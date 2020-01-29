@@ -3,18 +3,27 @@ use std::collections::HashMap;
 
 pub struct Tree {
     nodes: Vec<Node>,
+    roots: Vec<usize>,
 }
 
 impl Tree {
     pub fn singleton(value: Race) -> Self {
         let root = Node::new(value);
         let nodes = vec![root];
+        let roots = vec![0];
 
-        Self { nodes }
+        Self { nodes, roots }
     }
 
     pub fn expand(&mut self, dice: &Dice) {
-        self.expand_node(0, dice);
+        self.expand_roots(dice);
+    }
+
+    fn expand_roots(&mut self, dice: &Dice) {
+        let root_indices: Vec<usize> = self.roots.iter().copied().collect();
+        for index in root_indices {
+            self.expand_node(index, dice);
+        }
     }
 
     fn expand_node(&mut self, index: usize, dice: &Dice) {
