@@ -13,7 +13,7 @@ use std::{collections::HashMap, iter::Iterator, ops::Index};
 /// Determines the win chances for each camel.
 ///
 /// The `Distribution` returns for each camel present in the race, the chance of winning.
-pub fn project(race: &Race, dice: &Dice) -> Distribution {
+pub fn project(race: &Race, dice: &Dice) -> Chances {
     let mut tree = Tree::singleton(race.clone());
     tree.expand(dice);
 
@@ -21,6 +21,18 @@ pub fn project(race: &Race, dice: &Dice) -> Distribution {
     tree.visit_leaves(&mut counter);
 
     counter.chances()
+}
+
+/// All the relevant chances for each camel.
+/// 
+/// I.e. which camel is winning, which is losing, which is the runner up.
+pub struct Chances {
+    /// Distribution of the chance to win.
+    pub winner: Distribution,
+    /// Distribution of the chance to be runner up.
+    pub runner_up: Distribution,
+    /// Distribution of the chance to lose.
+    pub loser: Distribution,
 }
 
 /// The chances for a specific situation for each camel.
@@ -63,13 +75,27 @@ struct LeafCounter {
 }
 
 impl LeafCounter {
-    fn chances(&self) -> Distribution {
-        let distribution: HashMap<Camel, Fraction> = self
+    fn chances(&self) -> Chances {
+        let winner: HashMap<Camel, Fraction> = self
             .winner
             .iter()
             .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
             .collect();
-        Distribution::from(distribution)
+        let runner_up: HashMap<Camel, Fraction> = self
+            .runner_up
+            .iter()
+            .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
+            .collect();
+        let loser: HashMap<Camel, Fraction> = self
+            .loser
+            .iter()
+            .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
+            .collect();
+        Chances {
+            winner: Distribution::from(winner),
+            runner_up: Distribution::from(runner_up),
+            loser: Distribution::from(loser),
+        }
     }
 }
 
@@ -109,7 +135,7 @@ mod test {
         let dice = "r".parse::<Dice>().expect("to parse");
         let chances = project(&race, &dice);
 
-        assert_eq!(chances[&Camel::Red], Fraction::one());
+        assert_eq!(chances.winner[&Camel::Red], Fraction::one());
     }
 
     #[test]
@@ -118,7 +144,7 @@ mod test {
         let dice = "r".parse::<Dice>().expect("to parse");
         let chances = project(&race, &dice);
 
-        assert_eq!(chances[&Camel::Red], Fraction::new(2, 3));
-        assert_eq!(chances[&Camel::Yellow], Fraction::new(1, 3));
+        assert_eq!(chances.winner[&Camel::Red], Fraction::new(2, 3));
+        assert_eq!(chances.winner[&Camel::Yellow], Fraction::new(1, 3));
     }
 }
