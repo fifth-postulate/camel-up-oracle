@@ -24,7 +24,7 @@ pub fn project(race: &Race, dice: &Dice) -> Chances {
 }
 
 /// All the relevant chances for each camel.
-/// 
+///
 /// I.e. which camel is winning, which is losing, which is the runner up.
 pub struct Chances {
     /// Distribution of the chance to win.

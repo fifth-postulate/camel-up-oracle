@@ -38,7 +38,8 @@ fn main() {
         dice_description.parse::<Dice>(),
     ) {
         let result = project(&race, &dice);
-        let mut ordered: Vec<(Camel, Fraction)> = result.winner.values().map(|(k, v)| (*k, *v)).collect();
+        let mut ordered: Vec<(Camel, Fraction)> =
+            result.winner.values().map(|(k, v)| (*k, *v)).collect();
         ordered.sort_by(|(_, left), (_, right)| right.cmp(&left));
         print(&ordered);
     } else {
