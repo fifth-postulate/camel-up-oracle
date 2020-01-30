@@ -12,8 +12,8 @@
 //! let dice = "rw".parse::<Dice>().expect("to parse");
 //! 
 //! let result = project(&race, &dice);
-//! let red_chance = result.get(&Camel::Red).unwrap();
-//! let white_chance = result.get(&Camel::White).unwrap();
+//! let red_chance = result[&Camel::Red];
+//! let white_chance = result[&Camel::White];
 //! 
 //! assert!(white_chance > red_chance);
 //! ```

@@ -8,12 +8,12 @@ use crate::{
     fraction::Fraction,
     tree::{LeafVisitor, Tree},
 };
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Index, iter::Iterator};
 
 /// Determines the win chances for each camel.
 ///
-/// The `HashMap` returns for each camel present in the race, the chance of winning.
-pub fn project(race: &Race, dice: &Dice) -> HashMap<Camel, Fraction> {
+/// The `Distribution` returns for each camel present in the race, the chance of winning.
+pub fn project(race: &Race, dice: &Dice) -> Distribution {
     let mut tree = Tree::singleton(race.clone());
     tree.expand(dice);
 
@@ -23,17 +23,47 @@ pub fn project(race: &Race, dice: &Dice) -> HashMap<Camel, Fraction> {
     counter.chances()
 }
 
+/// The chances for a specific situation for each camel.
+pub struct Distribution{
+    distribution: HashMap<Camel, Fraction>,
+    default: Fraction,
+}
+
+impl Distribution {
+    /// Returns an iterator that iterates over the chances.
+    /// 
+    /// I.e. iterates over `(&Camel, &Fraction)` values.
+    pub fn values(&self) -> impl Iterator<Item=(&Camel, &Fraction)> + '_ {
+        self.distribution.iter()
+    }
+}
+
+impl From<HashMap<Camel, Fraction>> for Distribution {
+    fn from(distribution: HashMap<Camel, Fraction>) -> Self {
+        Self { distribution, default: Fraction::default()}
+    }
+}
+
+impl Index<&Camel> for Distribution {
+    type Output = Fraction;
+
+    fn index(&self, camel: &Camel) -> &Self::Output {
+        self.distribution.get(camel).unwrap_or(&self.default)
+    }
+}
+
 struct LeafCounter {
     total: usize,
     count: HashMap<Camel, usize>,
 }
 
 impl LeafCounter {
-    fn chances(&self) -> HashMap<Camel, Fraction> {
-        self.count
+    fn chances(&self) -> Distribution {
+        let distribution: HashMap<Camel, Fraction> = self.count
             .iter()
             .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
-            .collect()
+            .collect();
+        Distribution::from(distribution)
     }
 }
 
@@ -65,7 +95,7 @@ mod test {
         let dice = "r".parse::<Dice>().expect("to parse");
         let chances = project(&race, &dice);
 
-        assert_eq!(chances.get(&Camel::Red), Some(&Fraction::one()));
+        assert_eq!(chances[&Camel::Red], Fraction::one());
     }
 
     #[test]
@@ -74,7 +104,7 @@ mod test {
         let dice = "r".parse::<Dice>().expect("to parse");
         let chances = project(&race, &dice);
 
-        assert_eq!(chances.get(&Camel::Red), Some(&Fraction::new(2, 3)));
-        assert_eq!(chances.get(&Camel::Yellow), Some(&Fraction::new(1, 3)));
+        assert_eq!(chances[&Camel::Red], Fraction::new(2, 3));
+        assert_eq!(chances[&Camel::Yellow], Fraction::new(1, 3));
     }
 }
