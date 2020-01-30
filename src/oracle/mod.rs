@@ -57,13 +57,15 @@ impl Index<&Camel> for Distribution {
 
 struct LeafCounter {
     total: usize,
-    count: HashMap<Camel, usize>,
+    winner: HashMap<Camel, usize>,
+    runner_up: HashMap<Camel, usize>,
+    loser: HashMap<Camel, usize>,
 }
 
 impl LeafCounter {
     fn chances(&self) -> Distribution {
         let distribution: HashMap<Camel, Fraction> = self
-            .count
+            .winner
             .iter()
             .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
             .collect();
@@ -75,7 +77,9 @@ impl Default for LeafCounter {
     fn default() -> Self {
         Self {
             total: 0,
-            count: HashMap::new(),
+            winner: HashMap::new(),
+            runner_up: HashMap::new(),
+            loser: HashMap::new(),
         }
     }
 }
@@ -83,7 +87,13 @@ impl Default for LeafCounter {
 impl LeafVisitor for LeafCounter {
     fn visit(&mut self, race: &Race) {
         if let Some(winner) = race.winner() {
-            *self.count.entry(winner).or_insert(0) += 1;
+            *self.winner.entry(winner).or_insert(0) += 1;
+        };
+        if let Some(runner_up) = race.runner_up() {
+            *self.runner_up.entry(runner_up).or_insert(0) += 1;
+        };
+        if let Some(loser) = race.loser() {
+            *self.loser.entry(loser).or_insert(0) += 1;
         };
         self.total += 1;
     }
