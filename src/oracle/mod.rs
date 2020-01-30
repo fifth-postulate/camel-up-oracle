@@ -8,7 +8,7 @@ use crate::{
     fraction::Fraction,
     tree::{LeafVisitor, Tree},
 };
-use std::{collections::HashMap, ops::Index, iter::Iterator};
+use std::{collections::HashMap, iter::Iterator, ops::Index};
 
 /// Determines the win chances for each camel.
 ///
@@ -24,23 +24,26 @@ pub fn project(race: &Race, dice: &Dice) -> Distribution {
 }
 
 /// The chances for a specific situation for each camel.
-pub struct Distribution{
+pub struct Distribution {
     distribution: HashMap<Camel, Fraction>,
     default: Fraction,
 }
 
 impl Distribution {
     /// Returns an iterator that iterates over the chances.
-    /// 
+    ///
     /// I.e. iterates over `(&Camel, &Fraction)` values.
-    pub fn values(&self) -> impl Iterator<Item=(&Camel, &Fraction)> + '_ {
+    pub fn values(&self) -> impl Iterator<Item = (&Camel, &Fraction)> + '_ {
         self.distribution.iter()
     }
 }
 
 impl From<HashMap<Camel, Fraction>> for Distribution {
     fn from(distribution: HashMap<Camel, Fraction>) -> Self {
-        Self { distribution, default: Fraction::default()}
+        Self {
+            distribution,
+            default: Fraction::default(),
+        }
     }
 }
 
@@ -59,7 +62,8 @@ struct LeafCounter {
 
 impl LeafCounter {
     fn chances(&self) -> Distribution {
-        let distribution: HashMap<Camel, Fraction> = self.count
+        let distribution: HashMap<Camel, Fraction> = self
+            .count
             .iter()
             .map(|(camel, count)| (*camel, Fraction::new(*count as i64, self.total as u64)))
             .collect();

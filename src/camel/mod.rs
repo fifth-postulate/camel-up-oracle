@@ -269,6 +269,25 @@ impl Race {
             .map(|marker| marker.to_camel().unwrap())
             .last()
     }
+
+    /// Determines which camel is the loser, i.e. is at the back.
+    pub fn loser(&self) -> Option<Camel> {
+        self.positions
+            .iter()
+            .filter(|marker| marker.is_a_camel())
+            .map(|marker| marker.to_camel().unwrap())
+            .nth(0)
+    }
+
+    /// Determines which camel is the runner up, i.e. is behind the winner.
+    pub fn runner_up(&self) -> Option<Camel> {
+        self.positions
+            .iter()
+            .filter(|marker| marker.is_a_camel())
+            .map(|marker| marker.to_camel().unwrap())
+            .rev()
+            .nth(1)
+    }
 }
 
 /// Represents the dice that still can be rolled.
@@ -428,5 +447,17 @@ mod test {
         dice.insert(Camel::Green);
 
         assert_eq!(actual, Dice::from(dice));
+    }
+
+    #[test]
+    fn races_have_winners_runner_ups_and_losers() {
+        let race = "r,y,g".parse::<Race>().expect("to parse");
+        let winner = race.winner();
+        let runner_up = race.runner_up();
+        let loser = race.loser();
+
+        assert_eq!(winner, Some(Camel::Green));
+        assert_eq!(runner_up, Some(Camel::Yellow));
+        assert_eq!(loser, Some(Camel::Red));
     }
 }

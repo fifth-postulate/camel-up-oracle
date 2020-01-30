@@ -12,5 +12,5 @@ fn main() {
     for (camel, fraction) in ordered {
         print!("({:?},{})", camel, fraction);
     }
-    println!(); 
+    println!();
 }
