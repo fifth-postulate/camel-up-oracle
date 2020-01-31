@@ -72,6 +72,24 @@ impl Marker {
         }
     }
 
+    fn is_an_oasis(self) -> bool {
+        match self {
+            Marker::Oasis => true,
+            _ => false,
+        }
+    }
+
+    fn is_a_fata_morgana(self) -> bool {
+        match self {
+            Marker::FataMorgana => true,
+            _ => false,
+        }
+    }
+
+    fn is_an_adjustment(self) -> bool {
+        self.is_an_oasis() || self.is_a_fata_morgana()
+    } 
+
     fn to_camel(self) -> Option<Camel> {
         match self {
             Marker::Camel(camel) => Some(camel),
@@ -159,7 +177,21 @@ impl FromStr for Race {
             result.push(input[cursor..=cursor].parse::<Marker>()?);
             cursor += 1;
         }
-        // TODO check constraints
+        if result.iter().zip(result.iter().skip(1))
+        .filter(|(l,r)| l.is_a_camel() && r.is_an_oasis() || l.is_an_oasis() && r.is_a_camel())
+        .count() > 0 { return Err(RaceParseError::CamelInOasis)}
+
+        if result.iter().zip(result.iter().skip(1))
+        .filter(|(l,r)| l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel())
+        .count() > 0 { return Err(RaceParseError::CamelInFataMorgana)}
+
+        if result.iter().zip(result.iter().skip(1))
+        .filter(|(l,r)| l.is_an_adjustment() && r.is_an_adjustment())
+        .count() > 0 { return Err(RaceParseError::ToManyAdjustmentsInOnePosition)}
+
+        if result.iter().zip(result.iter().skip(2))
+        .filter(|(l,r)| l.is_an_adjustment() && r.is_an_adjustment())
+        .count() > 0 { return Err(RaceParseError::ConsecutiveAdjustments)}
 
         Ok(Race::from(result))
     }
@@ -170,7 +202,15 @@ impl FromStr for Race {
 pub enum RaceParseError {
     /// a race consists solely of markers, and this isn't a marker.
     NotAMarker(NotAMarker),
-}
+    /// a camel can't be in an oasis.
+    CamelInOasis,
+    /// a camel can't be in a fata morgana.
+    CamelInFataMorgana,
+    /// adjustments can't be in the same position.
+    ToManyAdjustmentsInOnePosition,
+    /// adjustments can't be consecutive.
+    ConsecutiveAdjustments
+ }
 
 impl From<NotAMarker> for RaceParseError {
     fn from(problem: NotAMarker) -> Self {
@@ -403,6 +443,38 @@ mod test {
             Marker::Divider,
             Marker::Camel(Camel::Yellow),
         ]);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn camel_can_not_be_in_an_oasis() {
+        let left = "r+,y".parse::<Race>();
+        let right = Err(RaceParseError::CamelInOasis);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn camel_can_not_be_in_a_fata_morgana() {
+        let left = "r-,y".parse::<Race>();
+        let right = Err(RaceParseError::CamelInFataMorgana);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn adjustments_can_not_be_in_same_position() {
+        let left = "r,+-,y".parse::<Race>();
+        let right = Err(RaceParseError::ToManyAdjustmentsInOnePosition);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn adjustments_can_not_be_in_consecutive() {
+        let left = "r,+,-,y".parse::<Race>();
+        let right = Err(RaceParseError::ToManyAdjustmentsInOnePosition);
 
         assert_eq!(left, right);
     }
