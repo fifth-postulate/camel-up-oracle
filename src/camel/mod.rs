@@ -51,6 +51,10 @@ pub enum Marker {
     Camel(Camel),
     /// Divider between positions.
     Divider,
+    /// When camels land on an oasis they advance one field.
+    Oasis,
+    /// When camels land on a fata morgana, they fallback one field.
+    FataMorgana
 }
 
 impl Marker {
@@ -87,6 +91,8 @@ impl FromStr for Marker {
             "g" => Ok(Marker::Camel(Camel::Green)),
             "w" => Ok(Marker::Camel(Camel::White)),
             "," => Ok(Marker::Divider),
+            "+" => Ok(Marker::Oasis),
+            "-" => Ok(Marker::FataMorgana),
             _ => Err(NotAMarker::But(input.to_owned())),
         }
     }
@@ -153,6 +159,7 @@ impl FromStr for Race {
             result.push(input[cursor..=cursor].parse::<Marker>()?);
             cursor += 1;
         }
+        // TODO check constraints
 
         Ok(Race::from(result))
     }
@@ -182,7 +189,7 @@ pub struct Roll {
 
 /// The faces of the Camel dice.
 ///
-/// It corresponds with the number of steps to take.oracle
+/// It corresponds with the number of steps to take.
 ///
 /// ```
 /// # use camel_up::camel::{Face};
@@ -248,6 +255,7 @@ impl Race {
                 .copied()
                 .collect();
             let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
+            // TODO factor in oasis and fata morgana 
             let result: Vec<Marker> = remaining[0..(index + 1 + divider_offset)]
                 .iter()
                 .chain(unit.iter())
@@ -266,7 +274,7 @@ impl Race {
         self.positions
             .iter()
             .filter(|marker| marker.is_a_camel())
-            .map(|marker| marker.to_camel().unwrap())
+            .map(|marker| marker.to_camel().unwrap(/* camel is present because of filter on camel */))
             .last()
     }
 
@@ -275,7 +283,7 @@ impl Race {
         self.positions
             .iter()
             .filter(|marker| marker.is_a_camel())
-            .map(|marker| marker.to_camel().unwrap())
+            .map(|marker| marker.to_camel().unwrap(/* camel is present because of filter on camel */))
             .nth(0)
     }
 
@@ -284,7 +292,7 @@ impl Race {
         self.positions
             .iter()
             .filter(|marker| marker.is_a_camel())
-            .map(|marker| marker.to_camel().unwrap())
+            .map(|marker| marker.to_camel().unwrap(/* camel is present because of filter on camel */))
             .rev()
             .nth(1)
     }
@@ -292,7 +300,7 @@ impl Race {
 
 /// Represents the dice that still can be rolled.
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Dice(HashSet<Camel>);
+pub struct Dice(HashSet<Camel>); // TODO model the fact that not all dice could be rolled.
 
 impl Dice {
     /// Remove a dice from the pyramid, i.e. the options to throw are reduced.
