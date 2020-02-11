@@ -321,17 +321,17 @@ impl Race {
                 .copied()
                 .collect();
 
-            let original_divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
-            let delta: i8 = match remaining[index + original_divider_offset] {
-                Marker::Oasis => 1,
-                Marker::FataMorgana => -1,
-                _ => 0,
+            let original_divider_offset = remaining[index..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize + 1).nth(0).unwrap(/* offset is present because of repeated divider */);
+            let delta: usize = match remaining[index + original_divider_offset - 1] {
+                Marker::Oasis => 2,
+                Marker::FataMorgana => 0,
+                _ => 1,
             };
-            let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(((roll.face as usize) as i8 + delta) as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
-            let result: Vec<Marker> = remaining[0..(index + 1 + divider_offset)]
+            let divider_offset = remaining[index..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize + delta).nth(0).unwrap(/* offset is present because of repeated divider */);
+            let result: Vec<Marker> = remaining[0..(index + divider_offset)]
                 .iter()
                 .chain(unit.iter())
-                .chain(remaining[(index + 1 + divider_offset)..].iter())
+                .chain(remaining[(index + divider_offset)..].iter())
                 .copied()
                 .collect();
             Self::from(result)
@@ -555,6 +555,15 @@ mod test {
         let race = "r,+,y".parse::<Race>().expect("to parse");
         let result = race.perform((Camel::Red, Face::One));
         let expected = "+,yr".parse::<Race>().expect("to parse");
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn fata_morgana_retreats_a_camel_when_it_lands() {
+        let race = "r,-,y".parse::<Race>().expect("to parse");
+        let result = race.perform((Camel::Red, Face::One));
+        let expected = "r,-,y".parse::<Race>().expect("to parse");
 
         assert_eq!(result, expected);
     }
