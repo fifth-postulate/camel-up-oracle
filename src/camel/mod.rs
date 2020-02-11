@@ -54,7 +54,7 @@ pub enum Marker {
     /// When camels land on an oasis they advance one field.
     Oasis,
     /// When camels land on a fata morgana, they fallback one field.
-    FataMorgana
+    FataMorgana,
 }
 
 impl Marker {
@@ -88,7 +88,7 @@ impl Marker {
 
     fn is_an_adjustment(self) -> bool {
         self.is_an_oasis() || self.is_a_fata_morgana()
-    } 
+    }
 
     fn to_camel(self) -> Option<Camel> {
         match self {
@@ -177,21 +177,47 @@ impl FromStr for Race {
             result.push(input[cursor..=cursor].parse::<Marker>()?);
             cursor += 1;
         }
-        if result.iter().zip(result.iter().skip(1))
-        .filter(|(l,r)| l.is_a_camel() && r.is_an_oasis() || l.is_an_oasis() && r.is_a_camel())
-        .count() > 0 { return Err(RaceParseError::CamelInOasis)}
+        if result
+            .iter()
+            .zip(result.iter().skip(1))
+            .filter(|(l, r)| l.is_a_camel() && r.is_an_oasis() || l.is_an_oasis() && r.is_a_camel())
+            .count()
+            > 0
+        {
+            return Err(RaceParseError::CamelInOasis);
+        }
 
-        if result.iter().zip(result.iter().skip(1))
-        .filter(|(l,r)| l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel())
-        .count() > 0 { return Err(RaceParseError::CamelInFataMorgana)}
+        if result
+            .iter()
+            .zip(result.iter().skip(1))
+            .filter(|(l, r)| {
+                l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel()
+            })
+            .count()
+            > 0
+        {
+            return Err(RaceParseError::CamelInFataMorgana);
+        }
 
-        if result.iter().zip(result.iter().skip(1))
-        .filter(|(l,r)| l.is_an_adjustment() && r.is_an_adjustment())
-        .count() > 0 { return Err(RaceParseError::ToManyAdjustmentsInOnePosition)}
+        if result
+            .iter()
+            .zip(result.iter().skip(1))
+            .filter(|(l, r)| l.is_an_adjustment() && r.is_an_adjustment())
+            .count()
+            > 0
+        {
+            return Err(RaceParseError::ToManyAdjustmentsInOnePosition);
+        }
 
-        if result.iter().zip(result.iter().skip(2))
-        .filter(|(l,r)| l.is_an_adjustment() && r.is_an_adjustment())
-        .count() > 0 { return Err(RaceParseError::ConsecutiveAdjustments)}
+        if result
+            .iter()
+            .zip(result.iter().skip(2))
+            .filter(|(l, r)| l.is_an_adjustment() && r.is_an_adjustment())
+            .count()
+            > 0
+        {
+            return Err(RaceParseError::ConsecutiveAdjustments);
+        }
 
         Ok(Race::from(result))
     }
@@ -209,8 +235,8 @@ pub enum RaceParseError {
     /// adjustments can't be in the same position.
     ToManyAdjustmentsInOnePosition,
     /// adjustments can't be consecutive.
-    ConsecutiveAdjustments
- }
+    ConsecutiveAdjustments,
+}
 
 impl From<NotAMarker> for RaceParseError {
     fn from(problem: NotAMarker) -> Self {
@@ -294,8 +320,14 @@ impl Race {
                 .chain(repeat(&Marker::Divider).take(4))
                 .copied()
                 .collect();
-            let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
-            // TODO factor in oasis and fata morgana 
+
+            let original_divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(roll.face as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
+            let delta: i8 = match remaining[index + original_divider_offset] {
+                Marker::Oasis => 1,
+                Marker::FataMorgana => -1,
+                _ => 0,
+            };
+            let divider_offset = remaining[(index+1)..].iter().enumerate().filter(|(_, marker)| marker.is_a_divider()).map(|(index, _)| index).skip(((roll.face as usize) as i8 + delta) as usize).nth(0).unwrap(/* offset is present because of repeated divider */);
             let result: Vec<Marker> = remaining[0..(index + 1 + divider_offset)]
                 .iter()
                 .chain(unit.iter())
@@ -472,9 +504,9 @@ mod test {
     }
 
     #[test]
-    fn adjustments_can_not_be_in_consecutive() {
+    fn adjustments_can_not_be_consecutive() {
         let left = "r,+,-,y".parse::<Race>();
-        let right = Err(RaceParseError::ToManyAdjustmentsInOnePosition);
+        let right = Err(RaceParseError::ConsecutiveAdjustments);
 
         assert_eq!(left, right);
     }
@@ -514,6 +546,15 @@ mod test {
         let race = "ro,y".parse::<Race>().expect("to parse");
         let result = race.perform((Camel::Red, Face::Three));
         let expected = "y,,ro".parse::<Race>().expect("to parse");
+
+        assert_eq!(result, expected);
+    }
+
+    #[test]
+    fn oasis_advance_a_camel_when_it_lands() {
+        let race = "r,+,y".parse::<Race>().expect("to parse");
+        let result = race.perform((Camel::Red, Face::One));
+        let expected = "+,yr".parse::<Race>().expect("to parse");
 
         assert_eq!(result, expected);
     }
