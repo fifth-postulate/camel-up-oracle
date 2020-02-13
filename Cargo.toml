@@ -11,6 +11,7 @@ readme = "README.md"
 keywords = ["game", "oracle", "camel"]
 categories = ["games", "mathematics"]
 license = "MIT"
+exclude = ["/docs"]
 
 [badges]
 travis-ci = { repository = "fifth-postulate/camel-up-oracle" }
