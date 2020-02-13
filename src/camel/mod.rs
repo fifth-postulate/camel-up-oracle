@@ -190,9 +190,7 @@ impl FromStr for Race {
         if result
             .iter()
             .zip(result.iter().skip(1))
-            .filter(|(l, r)| {
-                l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel()
-            })
+            .filter(|(l, r)| l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel())
             .count()
             > 0
         {
