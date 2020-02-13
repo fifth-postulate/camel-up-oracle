@@ -13,7 +13,7 @@
 //! assert_eq!(actual, expected);
 //! ```
 //!
-//! One can cut down on the verbosity by using the various `parse` functions and other convenience functions. The above code example can be widdles down to
+//! One can cut down on the verbosity by using the various `parse` functions and other convenience functions. The above code example can be widdled down to
 //!
 //! ```
 //! # use camel_up::camel::{Race, Marker, Camel, Roll, Face};
@@ -51,9 +51,9 @@ pub enum Marker {
     Camel(Camel),
     /// Divider between positions.
     Divider,
-    /// When camels land on an oasis they advance one field.
+    /// When camels land on an oasis they advance one position.
     Oasis,
-    /// When camels land on a fata morgana, they fallback one field.
+    /// When camels land on a fata morgana, they fallback one position.
     FataMorgana,
 }
 

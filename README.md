@@ -23,11 +23,11 @@ For the next throw one of six things can happen.
 5. Yellow comes up two
 6. Yellow comes up three
 
-Only in one situation will Red win, i.e. when red comes up three. Whatever the happens nextm the red camel will be on top of the white one and red will be victorious.
+Only in one situation will Red win, i.e. when red comes up three. Whatever the happens next the red camel will be on top of the yellow one and red will be victorious.
 
 Even in this race, the reasoning is complex. Let's use this crate to verify our reasoning.
 
-first announce add the `camel_up` crate to your dependencies.
+first announce the `camel_up` crate to your dependencies.
 
 ```yaml
 camel_up = *
@@ -46,16 +46,16 @@ We will make use of the prelude to import a few useful names.
 use camel_up::prelude::*;
 ```
 
-In you `main` function will will recreate the race. The `Race` struct implements the [`FromStr`][fromstr] trait. This allows one to parse a string that describes a race into a `Race`. Every camel is designated by the first letter of their color. Positions are marked via a comma `,`. So our race is described by `"r,,,w"`. Use that description in making a race.
+In our `main` function we will recreate the race. The `Race` struct implements the [`FromStr`][fromstr] trait. This allows one to parse a string that describes a race into a `Race`. Every camel is designated by the first letter of their color. Positions are marked via a comma `,`. So our race is described by `"r,,,y"`. Use that description in making a race.
 
 ```rust
-let race = "r,,,w".parse::<Race>().expect("to parse");
+let race = "r,,,y".parse::<Race>().expect("to parse");
 ```
 
 Similarly, The remaining dice can be created as well.
 
 ```rust
-let dice = "rw".parse::<Dice>().expect("to parse");
+let dice = "ry".parse::<Dice>().expect("to parse");
 ```
 
 With a `Race` and a set of `Dice` we can project how the race will be run.
@@ -64,11 +64,11 @@ With a `Race` and a set of `Dice` we can project how the race will be run.
 let result = project(&race, &dice);
 ```
 
-
-It returns a `HashMap` mapping camels to their chance of winning. We can turn it into a `Vec`.
+It returns a `Chances` mapping camels to their chance of winning. We can turn it into a `Vec`.
 
 ```rust
-let mut ordered: Vec<(Camel, Fraction)> = result.iter().map(|(k, v)| (*k, *v)).collect();
+let mut ordered: Vec<(Camel, Fraction)> =
+    result.winner.values().map(|(k, v)| (*k, *v)).collect();
 ```
 
 which can be sorted by decreasing chance.
@@ -89,13 +89,13 @@ println!()
 Running this will output
 
 ```plain
-(White,5/6)(Red,1/6)
+(Yellow,5/6)(Red,1/6)
 ```
 
 Which supports our earlier hard work.
 
 ### Tower
-The red camel is the underdog in above situation. Can we change the odds? The red camel could ask their friends to help. By building a unit of camel the chances might change.
+The red camel is the underdog in the above situation. Can we change the odds? The red camel could ask their friends to help. By building a unit of camels the chances might change in favor of the red camel.
 
 Changing the above [example][example] one can verify that Red needs all there friends to have a better chance of winning and beating Yellow.
 

@@ -3,8 +3,8 @@ extern crate camel_up;
 use camel_up::prelude::*;
 
 fn main() {
-    let race = "r,,w".parse::<Race>().expect("to parse");
-    let dice = "rw".parse::<Dice>().expect("to parse");
+    let race = "r,,y".parse::<Race>().expect("to parse");
+    let dice = "ry".parse::<Dice>().expect("to parse");
 
     let result = project(&race, &dice);
     let mut ordered: Vec<(Camel, Fraction)> =
