@@ -50,8 +50,8 @@
 pub mod camel;
 pub mod fraction;
 pub mod oracle;
-pub mod vis;
 mod tree;
+pub mod vis;
 
 pub mod prelude {
     //! Easy access to a good combination of camel up related concepts.

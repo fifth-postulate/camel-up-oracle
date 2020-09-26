@@ -163,7 +163,7 @@ impl From<Vec<Marker>> for Race {
         let (min, max) = positions
             .iter()
             .zip(0..)
-            .filter(|(marker, _)| marker.is_a_camel())
+            .filter(|(marker, _)| !marker.is_a_divider())
             .map(|(_, index)| index)
             .fold(
                 (core::usize::MAX, core::usize::MIN),
@@ -476,6 +476,22 @@ impl From<NotAMarker> for NoDice {
 mod test {
     use super::*;
 
+    mod bugs {
+        use super::*;
+        #[test]
+        fn bug1() {
+            let left = "y,,w!".parse::<Race>().expect("to parse");
+            let right = Race::from(vec![
+                Marker::Camel(Camel::Yellow),
+                Marker::Divider,
+                Marker::Divider,
+                Marker::Camel(Camel::White),
+                Marker::Finish,
+            ]);
+
+            assert_eq!(left, right)
+        }
+    }
     #[test]
     fn races_can_be_equated() {
         let left = Race::from(vec![
