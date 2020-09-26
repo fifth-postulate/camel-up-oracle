@@ -88,6 +88,13 @@ impl Marker {
         }
     }
 
+    fn is_a_finish(self) -> bool {
+        match self {
+            Marker::Finish => true,
+            _ => false,
+        }
+    }
+
     fn is_an_adjustment(self) -> bool {
         self.is_an_oasis() || self.is_a_fata_morgana()
     }
@@ -194,7 +201,9 @@ impl FromStr for Race {
         if result
             .iter()
             .zip(result.iter().skip(1))
-            .filter(|(l, r)| l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel())
+            .filter(|(l, r)| {
+                l.is_a_camel() && r.is_a_fata_morgana() || l.is_a_fata_morgana() && r.is_a_camel()
+            })
             .count()
             > 0
         {
@@ -221,6 +230,16 @@ impl FromStr for Race {
             return Err(RaceParseError::ConsecutiveAdjustments);
         }
 
+        if result.iter().filter(|t| t.is_a_finish()).count() > 1 {
+            return Err(RaceParseError::MultipleFinishes);
+        }
+
+        if result.iter().filter(|t| t.is_a_finish()).count() > 0
+            && !result.iter().last().map_or(true, |t| t.is_a_finish())
+        {
+            return Err(RaceParseError::MarkersAfterFinish);
+        }
+
         Ok(Race::from(result))
     }
 }
@@ -238,6 +257,10 @@ pub enum RaceParseError {
     ToManyAdjustmentsInOnePosition,
     /// adjustments can't be consecutive.
     ConsecutiveAdjustments,
+    /// their can be only one finish
+    MultipleFinishes,
+    /// and finish should be the last marker
+    MarkersAfterFinish,
 }
 
 impl From<NotAMarker> for RaceParseError {
@@ -374,7 +397,7 @@ impl Race {
 
 /// Represents the dice that still can be rolled.
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Dice(HashSet<Camel>); // TODO model the fact that not all dice could be rolled.
+pub struct Dice(HashSet<Camel>);
 
 impl Dice {
     /// Remove a dice from the pyramid, i.e. the options to throw are reduced.
@@ -521,6 +544,36 @@ mod test {
             Marker::Divider,
             Marker::Camel(Camel::Yellow),
         ]);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn races_can_have_a_finish() {
+        let left = "r,y,!".parse::<Race>().expect("to parse");
+        let right = Race::from(vec![
+            Marker::Camel(Camel::Red),
+            Marker::Divider,
+            Marker::Camel(Camel::Yellow),
+            Marker::Divider,
+            Marker::Finish,
+        ]);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn races_can_have_only_one_finish() {
+        let left = "r,y,!!".parse::<Race>();
+        let right = Err(RaceParseError::MultipleFinishes);
+
+        assert_eq!(left, right);
+    }
+
+    #[test]
+    fn races_can_have_only_finished_at_the_end() {
+        let left = "r,y,!,w".parse::<Race>();
+        let right = Err(RaceParseError::MarkersAfterFinish);
 
         assert_eq!(left, right);
     }
