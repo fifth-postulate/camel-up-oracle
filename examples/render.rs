@@ -17,10 +17,8 @@ fn main() {
       .get_matches();
 
   let arg = matches.value_of("race").unwrap();
-  println!("{:?}", arg);
-
   let race = arg.parse::<Race>().unwrap();
-  println!("{:?}", race);
+
   let board = Board::from(&race);
   print_board(&board);
 }
