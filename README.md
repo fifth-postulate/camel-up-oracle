@@ -23,7 +23,7 @@ For the next throw one of six things can happen.
 5. Yellow comes up two
 6. Yellow comes up three
 
-Only in one situation will Red win, i.e. when red comes up three. Whatever the happens next the red camel will be on top of the yellow one and red will be victorious.
+Only in one situation will Red win, i.e. when red comes up three. Whatever happens next the red camel will be on top of the yellow one and red will be victorious.
 
 Even in this race, the reasoning is complex. Let's use this crate to verify our reasoning.
 
@@ -98,6 +98,13 @@ Which supports our earlier hard work.
 The red camel is the underdog in the above situation. Can we change the odds? The red camel could ask their friends to help. By building a unit of camels the chances might change in favor of the red camel.
 
 Changing the above [example][example] one can verify that Red needs all there friends to have a better chance of winning and beating Yellow.
+
+### General
+Questions like the ones above can be answered in general. The main executable can be fed a description of a race and set of remaining dice and project who will be in the lead.
+
+```plain
+cargo run -- --race="gr,,y" --dice="gry"
+```
 
 [camel-up]: https://en.wikipedia.org/wiki/Camel_Up
 [fromstr]: https://doc.rust-lang.org/std/str/trait.FromStr.html
