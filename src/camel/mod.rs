@@ -374,7 +374,7 @@ impl Race {
 
 /// Represents the dice that still can be rolled.
 #[derive(PartialEq, Eq, Clone, Debug)]
-pub struct Dice(HashSet<Camel>); // TODO model the fact that not all dice could be rolled.
+pub struct Dice(HashSet<Camel>);
 
 impl Dice {
     /// Remove a dice from the pyramid, i.e. the options to throw are reduced.

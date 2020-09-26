@@ -38,7 +38,7 @@ impl Fraction {
         Fraction(0, 1)
     }
 
-    /// returns 0/1
+    /// returns 1/1
     pub fn one() -> Self {
         Fraction(1, 1)
     }

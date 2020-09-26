@@ -19,7 +19,7 @@
 //! ```
 //!
 //! ## Parsing of Race
-//! As the above example shows one can parse a string and get a `Race`. The following table describes each symbol.alloc
+//! As the above example shows one can parse a string and get a `Race`. The following table describes each symbol.
 //!
 //! | Symbol | Marker      |
 //! |--------|-------------|
@@ -31,6 +31,7 @@
 //! | ,      | Divider     |
 //! | +      | Oasis       |
 //! | -      | FataMorgana |
+//! | !      | Finish      |
 //!
 //! As per the rules of the game, camels can not be in a oasis or a fata morgana, nor can either of those be next to each other. So the following strings all fail to parse.
 //!
