@@ -42,13 +42,14 @@
 //! assert_eq!("r,-+,y".parse::<Race>(), Err(RaceParseError::ToManyAdjustmentsInOnePosition));
 //! assert_eq!("r,-,+,y".parse::<Race>(), Err(RaceParseError::ConsecutiveAdjustments));
 //! ```
-//! 
+//!
 //! ## Parsing of Dice
 //! Dice can be similarly parsed. The only allowed symbols are the ones for the camels.
 
 pub mod camel;
 pub mod fraction;
 pub mod oracle;
+pub mod vis;
 mod tree;
 
 pub mod prelude {

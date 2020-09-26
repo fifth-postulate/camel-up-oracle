@@ -139,7 +139,8 @@ pub enum NotAMarker {
 /// ```
 #[derive(PartialEq, Eq, Debug)]
 pub struct Race {
-    positions: Vec<Marker>,
+    /// The individual markers in this race
+    pub positions: Vec<Marker>,
 }
 
 impl Clone for Race {
