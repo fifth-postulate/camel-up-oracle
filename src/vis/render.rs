@@ -28,6 +28,10 @@ pub fn render_board(board: &Board) -> Vec<String> {
     }
   }
 
+  for i in 0..CAMEL_COUNT {
+    screen[i][BOARD_SIZE] = format!("{}", Color::White.paint("┇"));
+  }
+
   let mut ret = Vec::with_capacity(CAMEL_COUNT + 1);
 
   for i in (0..CAMEL_COUNT).rev() {
