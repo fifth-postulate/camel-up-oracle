@@ -31,8 +31,8 @@ pub enum TrapType {
 
 #[derive(PartialEq, Eq, Hash, Copy, Clone, Debug)]
 pub struct Trap {
-  trap_type: TrapType,
-  player: Player,
+  pub trap_type: TrapType,
+  pub player: Player,
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Debug)]
