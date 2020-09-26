@@ -55,6 +55,8 @@ pub enum Marker {
     Oasis,
     /// When camels land on a fata morgana, they fallback one position.
     FataMorgana,
+    /// The finish indicates the end of the race track
+    Finish,
 }
 
 impl Marker {
@@ -111,6 +113,7 @@ impl FromStr for Marker {
             "," => Ok(Marker::Divider),
             "+" => Ok(Marker::Oasis),
             "-" => Ok(Marker::FataMorgana),
+            "!" => Ok(Marker::Finish),
             _ => Err(NotAMarker::But(input.to_owned())),
         }
     }
